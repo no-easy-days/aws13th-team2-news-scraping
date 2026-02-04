@@ -9,7 +9,7 @@
    ```bash
     python -m venv venv
     source venv/bin/activate        # MacOS/Linux
-    source venv\Scripts\activate    # Windows
+    source .venv/Scripts/activate    # Windows
      ```
 3. 필요한 패키지 설치
    ```bash
