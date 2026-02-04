@@ -13,6 +13,8 @@ class Article(Base):
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     url: Mapped[str] = mapped_column(String(500), unique=True, nullable=False)
     source: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    published_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    thumbnail_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
 
     bookmarks = relationship("Bookmark", back_populates="article", cascade="all, delete-orphan")
