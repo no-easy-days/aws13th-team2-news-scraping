@@ -3,7 +3,7 @@ import time
 from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
 
-# TODO: ORM 연결, 디버깅 코드 로그 출력으로 변경, 중복 검사
+# TODO: ORM 연결+pydantic, 디버깅 코드 로그 출력으로 변경, 중복 검사
 
 def crawl_mk_news(days: int = 365) -> list[dict]:
     """
@@ -19,6 +19,11 @@ def crawl_mk_news(days: int = 365) -> list[dict]:
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
         "Referer": "https://www.mk.co.kr/news/it",
     }
+    # 쿠키 갱신 방법 (404 에러 발생 시):
+    # 1. 브라우저에서 https://www.mk.co.kr/news/it 접속
+    # 2. F12 → Network → "더보기" 클릭 → 요청 우클릭 → Copy as cURL
+    # 3. 복사한 내용에서 PCID, SCOUTER 값 찾아서 아래 업데이트
+    # * PCID는 JavaScript로 생성되어 requests로 자동 획득 불가
     cookies = {
         "PCID": "17683741249192596880095",
         "SCOUTER": "x391bqpj83qgof",
