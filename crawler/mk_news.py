@@ -1,3 +1,4 @@
+import logging
 import random
 import requests
 import time
@@ -7,6 +8,8 @@ from bs4 import BeautifulSoup
 from schemas.article import ArticleCreate
 from database import SessionLocal
 from repositories.article_repository import ArticleRepository
+
+logger = logging.getLogger(__name__)
 
 
 def crawl_mk_news(days: int = 365) -> list[ArticleCreate]:
@@ -54,13 +57,23 @@ def crawl_mk_news(days: int = 365) -> list[ArticleCreate]:
                 response = requests.get(base_url, params=params, headers=headers, cookies=cookies, timeout=10)
                 if response.status_code == 200:
                     break
-                print(f"Page {page} 요청 실패 ({response.status_code}), 재시도 {attempt + 1}/3...")
+
+                logger.error(
+                    "Page %s 요청 실패 (%s), 재시도 %s/3",
+                    page, response.status_code, attempt + 1
+                )
             except requests.RequestException as e:
-                print(f"Page {page} 네트워크 오류 ({e}), 재시도 {attempt + 1}/3...")
+                logger.error(
+                    "Page %s 네트워크 오류 (%s), 재시도 %s/3",
+                    page, e, attempt + 1
+                )
             time.sleep(2)
         else:
             # 3회 모두 실패
-            print(f"Page {page} 요청 최종 실패, 크롤링 중단")
+            logger.error(
+                "Page %s 요청 최종 실패, 크롤링 중단",
+                page
+            )
             break
 
         soup = BeautifulSoup(response.text, "html.parser")
@@ -82,7 +95,10 @@ def crawl_mk_news(days: int = 365) -> list[ArticleCreate]:
 
         # 진행 상황 출력
         oldest = all_articles[-1].published_at.strftime("%Y-%m-%d") if all_articles else "-"
-        print(f"Page {page}: {len(all_articles)}개 수집 | 마지막 기사: {oldest}")
+        logger.info(
+            "Page %s: %s개 수집 | 마지막 기사: %s",
+            page, len(all_articles), oldest
+        )
 
         page += 1
         time.sleep(random.uniform(0.5, 1.0))
@@ -106,7 +122,10 @@ def _parse_article(article) -> ArticleCreate | None:
             try:
                 article_date = datetime.strptime(f"{parts[1]}.{parts[0]}", "%Y.%m.%d")
             except ValueError:
-                print(f"날짜 파싱 실패: {date_text}")
+                logger.warning(
+                    "날짜 파싱 실패: %s",
+                    date_text
+                )
 
     if not (link_tag and title_tag and article_date):
         return None
@@ -120,7 +139,7 @@ def _parse_article(article) -> ArticleCreate | None:
             thumbnail_url=img_tag.get("src") if img_tag else None,
         )
     except Exception as e:
-        print(f"Pydantic 검증 실패: {e}")
+        logger.error("Pydantic 검증 실패: %s", e)
         return None
 
 
@@ -144,21 +163,9 @@ def save_to_db(articles: list[ArticleCreate]) -> tuple[int, int]:
 
 
 if __name__ == "__main__":
-    print("매일경제 IT 뉴스 크롤링 시작...\n")
+    logger.info("매일경제 IT 뉴스 크롤링 시작")
     articles = crawl_mk_news(days=7)  # 테스트: 7일치
     # articles = crawl_mk_news()  # 실제: 1년치
 
-    print(f"\n총 {len(articles)}개 수집 완료\n")
-
-    print("=== 최신 기사 5개 ===")
-    for i, a in enumerate(articles[:5], 1):
-        print(f"{i}. [{a.published_at.strftime('%Y-%m-%d')}] {a.title}")
-
-    print("\n=== 가장 오래된 기사 5개 ===")
-    for i, a in enumerate(articles[-5:], 1):
-        print(f"{i}. [{a.published_at.strftime('%Y-%m-%d')}] {a.title}")
-
     # DB 저장
-    print("\nDB 저장 중...")
     success, duplicate = save_to_db(articles)
-    print(f"저장 완료: 성공 {success}개, 중복 {duplicate}개")
