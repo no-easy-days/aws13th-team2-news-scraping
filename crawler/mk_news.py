@@ -164,8 +164,8 @@ def save_to_db(articles: list[ArticleCreate]) -> tuple[int, int]:
 
 if __name__ == "__main__":
     logger.info("매일경제 IT 뉴스 크롤링 시작")
-    articles = crawl_mk_news(days=7)  # 테스트: 7일치
-    # articles = crawl_mk_news()  # 실제: 1년치
+    # articles = crawl_mk_news(days=7)  # 테스트: 7일치
+    articles = crawl_mk_news()  # 실제: 1년치
 
     # DB 저장
     success, duplicate = save_to_db(articles)
