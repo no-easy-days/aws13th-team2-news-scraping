@@ -1,8 +1,8 @@
-from fastapi import FastAPI, APIRouter, Query, HTTPException, Depends, status
+from fastapi import APIRouter, Query, HTTPException, Depends, status
 from sqlalchemy.orm import Session
-from database import get_db
-from models import Article
-from utils.search_utils import get_similarity
+from backend.database import get_db
+from backend.models import Article
+from backend.utils.search_utils import get_similarity
 
 router = APIRouter()
 
@@ -36,7 +36,7 @@ def get_articles(
                 "id": article.id,
                 "title": article.title,
                 "url": article.url,
-                "content": article.content,
+                "description": article.description,
                 "published_at": article.published_at,
                 "thumbnail_url": article.thumbnail_url,
                 "created_at": article.created_at,
