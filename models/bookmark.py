@@ -17,3 +17,4 @@ class Bookmark(Base):
 
     article = relationship("Article", back_populates="bookmarks")
     user = relationship("User", back_populates="bookmarks")
+

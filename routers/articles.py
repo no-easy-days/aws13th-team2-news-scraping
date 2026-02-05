@@ -1,28 +1,30 @@
-from fastapi import FastAPI, APIRouter, Query, HTTPException, Depends
+from fastapi import FastAPI, APIRouter, Query, HTTPException, Depends, status
 from sqlalchemy.orm import Session
 from database import get_db
 from models import Article
 from utils.search_utils import get_similarity
-from datetime import datetime
 
 router = APIRouter()
 
 @router.get("/articles")
-async def get_articles(
+def get_articles(
         keyword: str = Query(..., description="검색 키워드"),
         db: Session = Depends(get_db)
 ):
-    if not keyword.strip():
+    clean_keyword = keyword.strip()
+
+    if not clean_keyword:
         raise HTTPException(
-            status_code=422,
-            detail={
-                "status": "error",
-                "message": "검색어를 입력해주세요."
-            }
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"status": "INVALID_INPUT", "message": "검색어를 입력해 주세요."}
+        )
+    if len(clean_keyword) < 2:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"status": "error", "message": "검색어는 두 글자 이상 입력해야 합니다."}
         )
 
     db_articles = db.query(Article).all()
-
     results = []
 
     # 2. 모든 기사를 돌면서 유사도 점수(data_score) 계산
@@ -44,9 +46,10 @@ async def get_articles(
     results.sort(key=lambda x: x["data_score"], reverse=True)
     if len(results) == 0:
         return {
-            "status": "success",
+            "status": "NOT_FOUND",  # "success" 대신 명확한 상태 값 부여
+            "total_count": 0,
             "data": [],
-            "message": "일치하는 기사가 없습니다. 다른 검색어를 입력해 보세요."
+            "message": f"'{clean_keyword}'에 대한 검색 결과가 없습니다."
         }
 
     return {
