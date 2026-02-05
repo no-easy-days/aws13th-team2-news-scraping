@@ -89,7 +89,7 @@ async def get_bookmarks(db: Session = Depends(get_db)):
                         "id": article.id,
                         "title": article.title,
                         "url": article.url,
-                        "content": getattr(article, 'content', None),  # content 없을 경우 대비
+                        "description": article.description,
                         "published_at": article.published_at,
                         "thumbnail_url": article.thumbnail_url,
                         "created_at": article.created_at,
