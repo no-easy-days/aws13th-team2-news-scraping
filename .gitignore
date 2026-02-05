@@ -367,3 +367,6 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/python,venv,visualstudiocode,pycharm+all,windows,linux,macos
+
+# Local test scripts
+search_test_data.py
