@@ -36,7 +36,7 @@ def get_articles(
                 "id": article.id,
                 "title": article.title,
                 "url": article.url,
-                "content": article.content,
+                "description": article.description,
                 "published_at": article.published_at,
                 "thumbnail_url": article.thumbnail_url,
                 "created_at": article.created_at,

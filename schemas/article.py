@@ -6,7 +6,7 @@ class ArticleCreate(BaseModel):
     """크롤링한 기사 데이터를 검증하는 스키마"""
     title: str
     url: HttpUrl
-    content: str | None = None
+    description: str | None = None
     published_at: datetime
     thumbnail_url: HttpUrl | None = None
 
@@ -16,7 +16,7 @@ class ArticleResponse(BaseModel):
     id: int
     title: str
     url: str
-    content: str | None
+    description: str | None
     published_at: datetime
     thumbnail_url: str | None
     created_at: datetime

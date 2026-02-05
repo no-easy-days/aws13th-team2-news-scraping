@@ -13,7 +13,7 @@ class ArticleRepository:
         db_article = Article(
             title=article.title,
             url=str(article.url),
-            content=article.content,
+            description=article.description,
             published_at=article.published_at,
             thumbnail_url=str(article.thumbnail_url) if article.thumbnail_url else None,
         )

@@ -134,7 +134,7 @@ def _parse_article(article) -> ArticleCreate | None:
         return ArticleCreate(
             title=title_tag.get_text(strip=True),
             url=link_tag.get("href"),
-            content=desc_tag.get_text(strip=True) if desc_tag else None,
+            description=desc_tag.get_text(strip=True) if desc_tag else None,
             published_at=article_date,
             thumbnail_url=img_tag.get("src") if img_tag else None,
         )
