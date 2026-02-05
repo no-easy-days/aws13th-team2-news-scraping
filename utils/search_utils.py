@@ -1,8 +1,14 @@
-# 1. 텍스트를 조각내는 도구
-def make_ngram(text: str, n=2):
-    text = text.replace(" ", "").lower()
-    return [text[i:i + n] for i in range(len(text) - n + 1)]
+import re
 
+
+def normalize(text: str) -> str:
+    text = text.lower()
+    text = re.sub(r"\s+", " ", text).strip()
+    return text
+
+def make_ngram(text: str, n=2):
+    text = normalize(text)
+    return [text[i:i + n] for i in range(len(text) - n + 1)]
 
 def get_similarity(query: str, target: str):
     """두 텍스트 간의 자카드 유사도를 계산하는 함수"""
