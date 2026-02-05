@@ -4,9 +4,12 @@ import time
 from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
 
-# TODO: ORM 연결+pydantic, 디버깅 코드 로그 출력으로 변경, 중복 검사
+from schemas.article import ArticleCreate
+from database import SessionLocal
+from repositories.article_repository import ArticleRepository
 
-def crawl_mk_news(days: int = 365) -> list[dict]:
+
+def crawl_mk_news(days: int = 365) -> list[ArticleCreate]:
     """
     매일경제 IT 뉴스를 크롤링합니다.
 
@@ -14,7 +17,7 @@ def crawl_mk_news(days: int = 365) -> list[dict]:
         days: 오늘 기준 며칠 전까지 수집할지 (기본 365일 = 1년)
 
     Returns:
-        기사 리스트 [{"title", "link", "description", "published_date", "thumbnail"}, ...]
+        ArticleCreate 스키마 리스트
 
     Note:
         - API가 최신순 정렬을 보장한다는 전제 하에 동작
@@ -37,7 +40,7 @@ def crawl_mk_news(days: int = 365) -> list[dict]:
     base_url = "https://www.mk.co.kr/_CP/855"
     cutoff_date = datetime.now() - timedelta(days=days)
 
-    all_articles = []
+    all_articles: list[ArticleCreate] = []
     page = 1
     stop_crawling = False
 
@@ -71,14 +74,14 @@ def crawl_mk_news(days: int = 365) -> list[dict]:
             if parsed is None:
                 continue
 
-            if parsed["published_date"] < cutoff_date:
+            if parsed.published_at < cutoff_date:
                 stop_crawling = True
                 break
 
             all_articles.append(parsed)
 
         # 진행 상황 출력
-        oldest = all_articles[-1]["published_date"].strftime("%Y-%m-%d") if all_articles else "-"
+        oldest = all_articles[-1].published_at.strftime("%Y-%m-%d") if all_articles else "-"
         print(f"Page {page}: {len(all_articles)}개 수집 | 마지막 기사: {oldest}")
 
         page += 1
@@ -87,7 +90,7 @@ def crawl_mk_news(days: int = 365) -> list[dict]:
     return all_articles
 
 
-def _parse_article(article) -> dict | None:
+def _parse_article(article) -> ArticleCreate | None:
     """기사 하나를 파싱. 실패하면 None."""
     link_tag = article.select_one("a.news_item")
     title_tag = article.select_one("h4")
@@ -108,13 +111,36 @@ def _parse_article(article) -> dict | None:
     if not (link_tag and title_tag and article_date):
         return None
 
-    return {
-        "title": title_tag.get_text(strip=True),
-        "link": link_tag.get("href"),
-        "description": desc_tag.get_text(strip=True) if desc_tag else "",
-        "published_date": article_date,  # datetime 객체
-        "thumbnail": img_tag.get("src") if img_tag else "",
-    }
+    try:
+        return ArticleCreate(
+            title=title_tag.get_text(strip=True),
+            url=link_tag.get("href"),
+            content=desc_tag.get_text(strip=True) if desc_tag else None,
+            published_at=article_date,
+            thumbnail_url=img_tag.get("src") if img_tag else None,
+        )
+    except Exception as e:
+        print(f"Pydantic 검증 실패: {e}")
+        return None
+
+
+def save_to_db(articles: list[ArticleCreate]) -> tuple[int, int]:
+    """
+    크롤링한 기사들을 DB에 저장합니다.
+
+    Args:
+        articles: ArticleCreate 리스트
+
+    Returns:
+        (성공 개수, 중복 개수)
+    """
+
+    db = SessionLocal()
+    try:
+        repo = ArticleRepository(db)
+        return repo.bulk_create(articles)
+    finally:
+        db.close()
 
 
 if __name__ == "__main__":
@@ -126,8 +152,13 @@ if __name__ == "__main__":
 
     print("=== 최신 기사 5개 ===")
     for i, a in enumerate(articles[:5], 1):
-        print(f"{i}. [{a['published_date'].strftime('%Y-%m-%d')}] {a['title']}")
+        print(f"{i}. [{a.published_at.strftime('%Y-%m-%d')}] {a.title}")
 
     print("\n=== 가장 오래된 기사 5개 ===")
     for i, a in enumerate(articles[-5:], 1):
-        print(f"{i}. [{a['published_date'].strftime('%Y-%m-%d')}] {a['title']}")
+        print(f"{i}. [{a.published_at.strftime('%Y-%m-%d')}] {a.title}")
+
+    # DB 저장
+    print("\nDB 저장 중...")
+    success, duplicate = save_to_db(articles)
+    print(f"저장 완료: 성공 {success}개, 중복 {duplicate}개")
