@@ -39,9 +39,21 @@ def crawl_mk_news(days: int = 365) -> list[dict]:
 
     while not stop_crawling:
         params = {"page": page, "lcode": "it", "scode": "latest"}
-        response = requests.get(base_url, params=params, headers=headers, cookies=cookies)
 
-        if response.status_code != 200:
+        # 최대 3회 재시도
+        response = None
+        for attempt in range(3):
+            try:
+                response = requests.get(base_url, params=params, headers=headers, cookies=cookies, timeout=10)
+                if response.status_code == 200:
+                    break
+                print(f"Page {page} 요청 실패 ({response.status_code}), 재시도 {attempt + 1}/3...")
+            except requests.RequestException as e:
+                print(f"Page {page} 네트워크 오류 ({e}), 재시도 {attempt + 1}/3...")
+            time.sleep(2)
+        else:
+            # 3회 모두 실패
+            print(f"Page {page} 요청 최종 실패, 크롤링 중단")
             break
 
         soup = BeautifulSoup(response.text, "html.parser")
@@ -60,6 +72,10 @@ def crawl_mk_news(days: int = 365) -> list[dict]:
                 break
 
             all_articles.append(parsed)
+
+        # 진행 상황 출력
+        oldest = all_articles[-1]["published_date"].strftime("%Y-%m-%d") if all_articles else "-"
+        print(f"Page {page}: {len(all_articles)}개 수집 | 마지막 기사: {oldest}")
 
         page += 1
         time.sleep(random.uniform(0.5, 1.0))
@@ -100,6 +116,7 @@ def _parse_article(article) -> dict | None:
 if __name__ == "__main__":
     print("매일경제 IT 뉴스 크롤링 시작...\n")
     articles = crawl_mk_news(days=7)  # 테스트: 7일치
+    # articles = crawl_mk_news()  # 실제: 1년치
 
     print(f"\n총 {len(articles)}개 수집 완료\n")
 
