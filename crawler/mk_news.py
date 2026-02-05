@@ -54,11 +54,10 @@ def crawl_mk_news(days: int = 365) -> list[dict]:
             if not parsed:
                 continue
 
-            if parsed["_date_obj"] < cutoff_date:
+            if parsed["published_date"] < cutoff_date:
                 stop_crawling = True
                 break
 
-            del parsed["_date_obj"]
             all_articles.append(parsed)
 
         page += 1
@@ -92,9 +91,8 @@ def _parse_article(article) -> dict | None:
         "title": title_tag.get_text(strip=True),
         "link": link_tag.get("href"),
         "description": desc_tag.get_text(strip=True) if desc_tag else "",
-        "date": article_date.strftime("%Y-%m-%d"),
+        "published_date": article_date,  # datetime 객체
         "thumbnail": img_tag.get("src") if img_tag else "",
-        "_date_obj": article_date,
     }
 
 
@@ -106,8 +104,8 @@ if __name__ == "__main__":
 
     print("=== 최신 기사 5개 ===")
     for i, a in enumerate(articles[:5], 1):
-        print(f"{i}. [{a['date']}] {a['title']}")
+        print(f"{i}. [{a['published_date'].strftime('%Y-%m-%d')}] {a['title']}")
 
     print("\n=== 가장 오래된 기사 5개 ===")
     for i, a in enumerate(articles[-5:], 1):
-        print(f"{i}. [{a['date']}] {a['title']}")
+        print(f"{i}. [{a['published_date'].strftime('%Y-%m-%d')}] {a['title']}")
