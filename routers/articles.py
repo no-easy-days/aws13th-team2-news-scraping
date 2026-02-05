@@ -51,7 +51,7 @@ def get_articles(
             "data": [],
             "message": f"'{clean_keyword}'에 대한 검색 결과가 없습니다."
         }
-
+    # 기사가 존재했을 때에 대한 return값
     return {
         "status": "success",
         "data": results
