@@ -26,6 +26,8 @@ def crawl_mk_news(days: int = 365) -> list[ArticleCreate]:
         - API가 최신순 정렬을 보장한다는 전제 하에 동작
         - 정렬이 바뀌면 cutoff_date 기반 중단 로직이 오작동할 수 있음
     """
+    logger.info("매일경제 IT 뉴스 크롤링 시작 (최근 %d일)", days)
+
     headers = {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
         "Referer": "https://www.mk.co.kr/news/it",
@@ -160,12 +162,3 @@ def save_to_db(articles: list[ArticleCreate]) -> tuple[int, int]:
         return repo.bulk_create(articles)
     finally:
         db.close()
-
-
-if __name__ == "__main__":
-    logger.info("매일경제 IT 뉴스 크롤링 시작")
-    # articles = crawl_mk_news(days=7)  # 테스트: 7일치
-    articles = crawl_mk_news()  # 실제: 1년치
-
-    # DB 저장
-    success, duplicate = save_to_db(articles)
