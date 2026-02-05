@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from backend.models import Bookmark
+from models import Bookmark
 
 class BookmarkRepository:
     def __init__(self, db: Session):

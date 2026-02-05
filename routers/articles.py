@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Query, HTTPException, Depends, status
 from sqlalchemy.orm import Session
-from backend.database import get_db
-from backend.models import Article
-from backend.utils.search_utils import get_similarity
+from database import get_db
+from models import Article
+from utils.search_utils import get_similarity
 
 router = APIRouter()
 

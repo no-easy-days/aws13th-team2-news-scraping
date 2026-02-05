@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError, OperationalError, DatabaseError
-from backend.database import get_db
-from backend.repositories.bookmark_repository import (BookmarkRepository)
+from database import get_db
+from repositories.bookmark_repository import (BookmarkRepository)
 
 router = APIRouter(prefix="/articles", tags=["Bookmark"])
 
