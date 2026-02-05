@@ -1,3 +1,4 @@
+import random
 import requests
 import time
 from datetime import datetime, timedelta
@@ -51,7 +52,7 @@ def crawl_mk_news(days: int = 365) -> list[dict]:
 
         for article in articles:
             parsed = _parse_article(article)
-            if not parsed:
+            if parsed is None:
                 continue
 
             if parsed["published_date"] < cutoff_date:
@@ -61,7 +62,7 @@ def crawl_mk_news(days: int = 365) -> list[dict]:
             all_articles.append(parsed)
 
         page += 1
-        time.sleep(1.0)
+        time.sleep(random.uniform(0.5, 1.0))
 
     return all_articles
 
