@@ -15,6 +15,10 @@ def crawl_mk_news(days: int = 365) -> list[dict]:
 
     Returns:
         기사 리스트 [{"title", "link", "description", "published_date", "thumbnail"}, ...]
+
+    Note:
+        - API가 최신순 정렬을 보장한다는 전제 하에 동작
+        - 정렬이 바뀌면 cutoff_date 기반 중단 로직이 오작동할 수 있음
     """
     headers = {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
