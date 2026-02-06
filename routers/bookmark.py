@@ -125,5 +125,3 @@ async def get_bookmarks(db: Session = Depends(get_db)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="북마크 목록 조회 중 오류가 발생했습니다."
         )
-
-
