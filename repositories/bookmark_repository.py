@@ -11,6 +11,14 @@ class BookmarkRepository:
             Bookmark.user_id == user_id,
             Bookmark.article_id == article_id
         ).first()
+        
+    def get_user_bookmarks(self, user_id: int):
+        """특정 유저의 모든 북마크 조회 (기사 정보 포함)"""
+        bookmarks = self.db.query(Bookmark).filter(
+            Bookmark.user_id == user_id
+        ).all()
+
+        return bookmarks
 
     def create_bookmark(self, user_id: int, article_id: int):
         """북마크 생성"""
