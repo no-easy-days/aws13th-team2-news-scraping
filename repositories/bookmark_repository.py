@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
-from models.bookmark import Bookmark
+from models import Bookmark
+
 
 class BookmarkRepository:
     def __init__(self, db: Session):
@@ -12,6 +13,15 @@ class BookmarkRepository:
             Bookmark.article_id == article_id
         ).first()
         
+    def get_user_bookmarks(self, user_id: int):
+        """특정 유저의 모든 북마크 조회 (기사 정보 포함)"""
+        bookmarks = self.db.query(Bookmark).filter(
+            Bookmark.user_id == user_id
+        ).all()
+
+        return bookmarks
+
+
     def get_user_bookmarks(self, user_id: int):
         """특정 유저의 모든 북마크 조회 (기사 정보 포함)"""
         bookmarks = self.db.query(Bookmark).filter(
