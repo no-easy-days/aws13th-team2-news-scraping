@@ -21,7 +21,6 @@ def crawl_mk_news(days: int = 365) -> list[ArticleCreate]:
 
     Returns:
         ArticleCreate 스키마 리스트
-
     Note:
         - API가 최신순 정렬을 보장한다는 전제 하에 동작
         - 정렬이 바뀌면 cutoff_date 기반 중단 로직이 오작동할 수 있음
@@ -46,6 +45,7 @@ def crawl_mk_news(days: int = 365) -> list[ArticleCreate]:
     cutoff_date = datetime.now() - timedelta(days=days)
 
     all_articles: list[ArticleCreate] = []
+
     page = 1
     stop_crawling = False
 
@@ -76,6 +76,7 @@ def crawl_mk_news(days: int = 365) -> list[ArticleCreate]:
                 "Page %s 요청 최종 실패, 크롤링 중단",
                 page
             )
+
             break
 
         soup = BeautifulSoup(response.text, "html.parser")
@@ -131,6 +132,7 @@ def _parse_article(article) -> ArticleCreate | None:
 
     if not (link_tag and title_tag and article_date):
         return None
+
 
     try:
         return ArticleCreate(
